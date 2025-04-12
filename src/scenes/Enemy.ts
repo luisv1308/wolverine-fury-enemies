@@ -1,36 +1,32 @@
 import Phaser from 'phaser';
 
 export default class Enemy extends Phaser.GameObjects.Sprite {
-  direction: 'left' | 'right';
-  speed: number;
-  hitArea: Phaser.Geom.Rectangle;
+  public direction: 'left' | 'right';
+  public hitArea: Phaser.Geom.Rectangle;
+  private vx: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, direction: 'left' | 'right') {
-    super(scene, x, y, 'ninja', 'run_0');
+    super(scene, x, y, 'ninja_running', 'run_0');
     this.direction = direction;
-    this.speed = 100;
 
-    this.setOrigin(0.5);
+    this.setOrigin(0.5, 0.5);
     this.setScale(2);
-    this.setFlipX(direction === 'right');
-
-    // 🟥 Crear hitArea manual (por ejemplo más angosta y centrada)
-    const offsetX = -20;
-    const offsetY = -40;
-    const width = 40;
-    const height = 80;
-    this.hitArea = new Phaser.Geom.Rectangle(this.x + offsetX, this.y + offsetY, width, height);
-
     scene.add.existing(this);
     this.play('ninja_run');
+
+    // Velocidad constante (ajustá valores si querés que vayan más rápido)
+    const speed = 160; // píxeles por segundo
+    this.vx = direction === 'left' ? speed : -speed;
+
+    const baseY = this.y + (this.displayHeight / 2) - 16;
+    this.hitArea = new Phaser.Geom.Rectangle(this.x - 24, baseY, 48, 32);
   }
 
   update(time: number, delta: number) {
-    const velocity = (this.speed * delta) / 1000;
-    this.x += this.direction === 'left' ? velocity : -velocity;
+    // Mover basado en el deltaTime real
+    this.x += this.vx * (delta / 1000);
 
-    // 🟥 Actualizar posición del hitArea con el sprite
-    this.hitArea.x = this.x - 20;
-    this.hitArea.y = this.y - 40;
+    const baseY = this.y + (this.displayHeight / 2) - 16;
+    this.hitArea.setTo(this.x - 24, baseY, 48, 32);
   }
 }
